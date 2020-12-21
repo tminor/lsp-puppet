@@ -30,6 +30,7 @@
 
 (require 'lsp-mode)
 (require 'ht)
+(require 'dash)
 
 (defgroup lsp-puppet nil
   "Puppet lsp server group"
@@ -46,23 +47,38 @@ A trailing slash is expected."
   :risky t
   :type 'directory)
 
-(defcustom lsp-puppet-settings ""
-  "An string of settings to provide as the value for --puppet-settings."
+(defcustom lsp-puppet-modulepath '()
+  "Path to Puppet modules."
   :group 'lsp-puppet
-  :type 'string)
+  :type 'list)
+
+(defcustom lsp-puppet-vardir nil
+  "Path to Puppet's cache directory."
+  :group 'lsp-puppet
+  :type 'directory)
+
 
 (defun lsp-puppet-server-start-fun ()
   "Puppet LSP start function."
-  `("bundle"
-    "exec"
-    "ruby"
-    ,(concat lsp-puppet-server-install-dir "puppet-languageserver")
-    "--timeout=0"
-    "--no-stop"
-    "--stdio"
-    "--debug=stdio"
-    ,(when lsp-puppet-settings
-       (concat "--puppet-settings=" lsp-puppet-settings))))
+  (remove nil
+          `("bundle"
+            "exec"
+            "ruby"
+            ,(concat lsp-puppet-server-install-dir "puppet-languageserver")
+            "--timeout=0"
+            "--slow-start"
+            "--no-stop"
+            "--stdio"
+            "--debug=stdio"
+            ,(when (or lsp-puppet-modulepath
+                       lsp-puppet-vardir)
+               (concat "--puppet-settings="
+                       (string-join `(,@(when (bound-and-true-p lsp-puppet-modulepath)
+                                          (list "--modulepath"
+                                                (string-join lsp-puppet-modulepath ":")))
+                                      ,@(when (bound-and-true-p lsp-puppet-vardir)
+                                          (list "--vardir" lsp-puppet-vardir)))
+                                    ","))))))
 
 (add-to-list 'lsp-language-id-configuration '(puppet-mode . "puppet-ls"))
 
