@@ -1,7 +1,29 @@
 * Puppet Editor Services
 :PROPERTIES:
-:HASH:     d2d1ac5135d49a9d4d056f9b52fdc362
-:MODIFIED: [2020-11-16 Mon 11:57]
+:HASH:     3c8f0c711471116c2b84554430c441cc
+:MODIFIED: [2020-12-21 Mon 17:07]
 :END:
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+To get started, follow [[https://github.com/puppetlabs/puppet-editor-services#setting-up-editor-services-for-development][the directions found here]] to install
+=puppet-editor-services=. Set =lsp-puppet-server-install-dir= to the
+cloned repository and set =lsp-puppet-modulepath= accordingly.
+
+*NOTE*: I had to apply a tiny patch to =puppet-languageserver-sidecar= to
+ avoid a bug that prevented LSP from functioning properly. See below:
+
+#+begin_src diff
+diff --git a/lib/puppet-languageserver-sidecar/puppet_strings_helper.rb b/lib/puppet-languageserver-sidecar/puppet_strings_helper.rb
+index 736e0db..9aa9660 100644
+--- a/lib/puppet-languageserver-sidecar/puppet_strings_helper.rb
++++ b/lib/puppet-languageserver-sidecar/puppet_strings_helper.rb
+@@ -144,7 +144,7 @@ module PuppetLanguageServerSidecar
+               param_name = tag[:name]
+               obj.parameters[param_name] = {
+                 :doc  => tag[:text],
+-                :type => tag[:types].join(', ')
++                :type => tag[:types]&.join(', ')
+               }
+             end
+           end
+
+#+end_src
